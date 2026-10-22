@@ -7,6 +7,7 @@ int main()
 {
     std::cout << "Hello World!\n";
 	std::cout << "test1.cpp" << std::endl;
+	std::cout << "test2";
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
