@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <limits>
 using namespace std;
 
 
@@ -87,6 +88,15 @@ int main()
 		cout << " 3. exit" << endl;
 		cout << "Enter Choice: "<< endl;
 		cin >> choice;
+		if (cin.fail()) { // check for invalid input
+			cin.clear(); // clear the error flag
+			cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
+			cout << "Invalid input. Please enter a number." << endl;
+			continue; // go back to the start of the loop
+		}
+		
+		
+
 		if (choice == 1) {
 			int courseType;
 			string name;
@@ -140,3 +150,4 @@ int main()
 
 	return 0;
 }
+//right now it prints recommended time per week, soon we will add a calander feature and make it track more reasonably 
