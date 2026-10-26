@@ -75,7 +75,7 @@ public:
 
 int main()
 {
-	
+	schedule mySchedule;
 		//console driver here:
 		cout << "W.I.P. study tracker v1" << endl;
 	int choice = 0;
@@ -97,6 +97,25 @@ int main()
 			cout << "Enter credit hours: ";
 			cin >> credits;
 
+			if (courseType == 1) {
+				int difficulty;
+				cout << "Enter difficulty: " << endl;
+				cin >> difficulty;
+
+				mySchedule.addCourse(new StandardCourse(name, credits, difficulty));
+				cout << name << " added to schedule." << endl;
+			}
+			else if (courseType == 2) {
+				int days;
+				cout << "Enter days until exam: ";
+				cin >> days;
+
+				mySchedule.addCourse(new examprep(name, credits, days));
+				cout << name << " added as urgent test prep." << endl;
+			}
+			else {
+				std::cout << "Invalid course type selected." << endl;
+			}
 		}
 
 		
@@ -106,5 +125,5 @@ int main()
 	}
 
 
-	return 0
+	return 0;
 }
