@@ -1,21 +1,94 @@
-// test1.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+
 
 #include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+
+//base class blueprint
+class StudyItem {
+
+	protected: // derived classes CAN access
+		string name;
+		int CreditHours;
+
+public:
+	//constructor
+	StudyItem(string n, int c) : name(n), CreditHours(c) {}
+	virtual ~StudyItem() {} // A virtual destructor ensures that when a derived class is deleted from memory, itll clean up without junk data
+	virtual void calculatestudyhours() const = 0; // =0 makes it a pure virtual class. Thisll force any class that inherits StudyItem to write its own version of this exact function.
+
+
+};
+class StandardCourse : public StudyItem { //first derived class
+private:
+	int difficulty; // for our difficulty level track
+
+public:
+	StandardCourse(string n, int c, int diff) : StudyItem(n, c), difficulty(diff) {} // constructor
+
+	void calculatestudyhours() const override { // override the base class function, this is to ensure a proper replacement of the base class pure virtual
+		double hours = (CreditHours * 2.0) * difficulty / 3.0; //credit*2 is for the recommended time to study per credit hour, 3 is just an average is we take difficulty out of 5
+		cout << name << " (standard): " << hours << " hours of study time recommended." << endl;
+	}
+};
+//derived class 2
+class examprep : public StudyItem {
+private:
+	int daysUntilExam; // exam prep urgency alg. will start here
+public: 
+	examprep(string n, int c, int days) : StudyItem(n, c), daysUntilExam(days) {} // constructor again
+	// Overriding the math AGAIN, but this time executing the urgency logic for upcoming tests.
+	void calculatestudyhours() const override {
+		double hours = (CreditHours * 2.0) + ((8 - daysUntilExam) * 1.5);// 8 is used for the urgency logic, an example is 8-1=7so test is one day away, MASSIVE urgency boost, 7 is the urgency SCORE**
+		cout << name << " (URGENT): " << hours << " hours/week\n";
+	}
+
+};
+
+class schedule {
+private:
+	vector<StudyItem*> courseList; // vector of pointers to StudyItem objects
+public: 
+	~schedule() {
+		for (size_t i = 0; i < courseList.size(); i++) { // The destructor loops through the vector and deletes the pointers to free up RAM.
+			delete courseList[i];
+		}
+	}
+	void addCourse(StudyItem* course) {
+		courseList.push_back(course); // adds a new course to the vector
+	}
+
+	// polymorphic user task, even though the vector holds generic "StudyItem" pointers the program automatically figures out whether to run the Standard math or the ExamPrep math for each specific item.
+	void generaterecommendations() const {
+
+		cout << "\n - - study recommendations - -\n";
+		for (size_t i = 0; i < courseList.size(); i++) {
+			courseList[i]->calculatestudyhours();
+		}
+	}
+};
+
+
+
 
 int main()
 {
-    std::cout << "Hello World!\n";
-	std::cout << "test1.cpp" << std::endl;
+    //console driver here:
+	cout << "W.I.P. study tracker v1" << endl;
+	int choice = 0;
+	//basic loops here
+	while (choice != 3) {
+		cout << "Menu: " << endl;// in the future for this menu i want to have a total tracked # hours
+		cout << "1. Add class" << endl;
+		cout << "2. generate recommendations"<<endl;
+		cout << " 3. exit" << endl;
+		cin >> choice;
+	
+
+	}
+
+
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
