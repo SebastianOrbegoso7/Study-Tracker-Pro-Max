@@ -1,5 +1,14 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+# Visual Studio Background Cache
+.vs/
 
-/.vs
+# Build and Compile Folders
+Debug/
+Release/
+x64/
+x86/
+
+# Compiled Executables and Object Files
+*.exe
+*.obj
+*.pdb
+*.ilk
