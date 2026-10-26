@@ -34,7 +34,7 @@ public:
 	}
 };
 //derived class 2
-class examprep : public StudyItem {
+class examprep : public StudyItem {  //look into making this into standardcourse class
 private:
 	int daysUntilExam; // exam prep urgency alg. will start here
 public: 
@@ -75,20 +75,36 @@ public:
 
 int main()
 {
-    //console driver here:
-	cout << "W.I.P. study tracker v1" << endl;
+	
+		//console driver here:
+		cout << "W.I.P. study tracker v1" << endl;
 	int choice = 0;
 	//basic loops here
-	while (choice != 3) {
+	while (choice != 3) { // add switch case later
 		cout << "Menu: " << endl;// in the future for this menu i want to have a total tracked # hours
 		cout << "1. Add class" << endl;
-		cout << "2. generate recommendations"<<endl;
+		cout << "2. generate recommendations" << endl;
 		cout << " 3. exit" << endl;
+		cout << "Enter Choice: "<< endl;
+		if (choice == 1) {
+			int courseType;
+			string name;
+			int credits; 
+			cout << "Enter course type (1 for standard, 2 for exam prep): ";
+			cin >> courseType;
+			cout << "Enter course name: ";
+			cin >> name;
+			cout << "Enter credit hours: ";
+			cin >> credits;
+
+		}
+
+		
 		cin >> choice;
-	
+
 
 	}
 
 
+	return 0
 }
-
