@@ -30,7 +30,7 @@ public:
 
 	void calculatestudyhours() const override { // override the base class function, this is to ensure a proper replacement of the base class pure virtual
 		double hours = (CreditHours * 2.0) * difficulty / 3.0; //credit*2 is for the recommended time to study per credit hour, 3 is just an average is we take difficulty out of 5
-		cout << name << " (standard): " << hours << " hours of study time recommended." << endl;
+		cout << name << " (standard): " << hours << " hours of study time recommended per week." << endl;
 	}
 };
 //derived class 2
@@ -86,10 +86,11 @@ int main()
 		cout << "2. generate recommendations" << endl;
 		cout << " 3. exit" << endl;
 		cout << "Enter Choice: "<< endl;
+		cin >> choice;
 		if (choice == 1) {
 			int courseType;
 			string name;
-			int credits; 
+			int credits;
 			cout << "Enter course type (1 for standard, 2 for exam prep): ";
 			cin >> courseType;
 			cout << "Enter course name: ";
@@ -116,10 +117,22 @@ int main()
 			else {
 				std::cout << "Invalid course type selected." << endl;
 			}
+
+		}
+		else if (choice == 2) {
+			mySchedule.generaterecommendations();
+		}
+		else if (choice != 3) {
+			cout << "Invalid choice. Please pick 1, 2, or 3.\n" << endl;
+		}
+		else {
+			cout << "Exiting program. Good Luck Studying!\n" << endl;
+
+		
+
 		}
 
 		
-		cin >> choice;
 
 
 	}
