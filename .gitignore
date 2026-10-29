@@ -1,14 +1,12 @@
-# Visual Studio Background Cache
+
+build/
+out/
+.cache/
 .vs/
-
-# Build and Compile Folders
-Debug/
-Release/
-x64/
-x86/
-
-# Compiled Executables and Object Files
-*.exe
-*.obj
-*.pdb
-*.ilk
+generated/
+compile_commands.json
+.qtcreator/
+*.user
+*.user.*
+*.autosave
+.DS_Store
