@@ -11,23 +11,23 @@ using namespace std;
 
 int main() { 
 	Schedule mySchedule;
-	//console driver here:
-	cout << "W.I.P. study tracker v1" << endl;
+	// Console driver here:
+	cout << "W.I.P. Study Tracker V1" << endl; // Fixed grammatical error: uncapitalized title
 	int choice = 0;
-	//basic loops here
-	while (choice != 3) { // add switch case later
-		cout << "Menu: " << endl;// in the future for this menu i want to have a total tracked # hours
-		cout << "1. Add class" << endl;
-		cout << "2. generate recommendations" << endl;
-		cout << "3. View current schedule" << endl;
-		cout << "4. exit" << endl;
-		cout << "Enter Choice: " << endl;
+	// Basic loops here
+	while (choice != 3) { // Add switch case later
+		cout << "Menu: " << endl;// In the future for this, menu I want to have a total tracked # hours
+		cout << "1. Add Class" << endl; // Fixed grammatical error: uncapitalized option title
+		cout << "2. Generate Recommendations" << endl; // Fixed grammatical error: uncapitalized option title
+		cout << "3. View Current Schedule" << endl; // Fixed grammatical error: uncapitalized option title
+		cout << "4. Exit" << endl; // Fixed grammatical error: uncapitalized option title
+		cout << "Enter Choice: " << endl; // Fixed grammatical error: uncapitalized option title
 		cin >> choice;
-		if (cin.fail()) { // check for invalid input
-			cin.clear(); // clear the error flag
-			cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
+		if (cin.fail()) { // Check for invalid input
+			cin.clear(); // Clear the error flag
+			cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
 			cout << "Invalid input. Please enter a number." << endl;
-			continue; // go back to the start of the loop
+			continue; // Go back to the start of the loop
 		}
 
 		if (choice == 1) {
@@ -84,4 +84,4 @@ int main() {
 	}
 	return 0;
 }
-//right now it prints recommended time per week, soon we will add a calander feature and make it track more reasonably 
+// Right now, it prints recommended time per week, soon we will add a calander feature and make it track more reasonably 
