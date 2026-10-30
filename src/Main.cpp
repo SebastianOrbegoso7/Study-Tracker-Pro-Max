@@ -5,6 +5,7 @@
 #include "ClassSchedule.h"
 #include "StandardCourse.h"
 #include "ExamPrep.h"
+#include <QWidget>
 using namespace std;
 
 
