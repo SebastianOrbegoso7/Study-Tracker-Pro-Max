@@ -19,7 +19,8 @@ int main() {
 		cout << "Menu: " << endl;// in the future for this menu i want to have a total tracked # hours
 		cout << "1. Add class" << endl;
 		cout << "2. generate recommendations" << endl;
-		cout << " 3. exit" << endl;
+		cout << "3. View current schedule" << endl;
+		cout << "4. exit" << endl;
 		cout << "Enter Choice: " << endl;
 		cin >> choice;
 		if (cin.fail()) { // check for invalid input
@@ -28,8 +29,6 @@ int main() {
 			cout << "Invalid input. Please enter a number." << endl;
 			continue; // go back to the start of the loop
 		}
-
-
 
 		if (choice == 1) {
 			int courseType;
@@ -64,24 +63,25 @@ int main() {
 
 		}
 		else if (choice == 2) {
-			mySchedule.generateRecommendations();
+			try {
+				mySchedule.generateRecommendations();
+
+			}
+			catch (const std::runtime_error& e) {
+				cout << "\nApplication Error: " << e.what() << "\n"; // e.what() error message 
+				cout << "Your data is preserved. Please try again.\n";
+			}
 		}
-		else if (choice != 3) {
-			cout << "Invalid choice. Please pick 1, 2, or 3.\n" << endl;
+		else if (choice == 3) {
+			//mySchedule.viewSchedule();
+		}
+		else if (choice == 4) {
+			cout << "Exiting program. Good Luck Studying!\n" << endl;
 		}
 		else {
-			cout << "Exiting program. Good Luck Studying!\n" << endl;
-
-
-
+			cout << "Invalid choice. Please pick 1, 2, 3, or 4.\n" << endl;
 		}
-
-
-
-
 	}
-
-
 	return 0;
 }
 //right now it prints recommended time per week, soon we will add a calander feature and make it track more reasonably 
