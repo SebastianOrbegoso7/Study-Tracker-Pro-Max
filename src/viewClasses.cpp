@@ -2,28 +2,22 @@
 #include <vector>
 #include <string>
 #include "viewClasses.h" // 1. Include the header file at the top
+using namespace std;
 
-int main() {
-    std::vector<std::string> myClasses; // Holds all class names entered by the user
-    int choice = 3;                     // Example user choice variable
-
-    // Using if, else if, and else statements to handle menu choices
-    if (choice == 1) {
-        // Code to add a class would go here
-        std::cout << "Option 1 chosen: Add class\n";
-    }
-    else if (choice == 2) {
-        // Other menu logic would go here
-        std::cout << "Option 2 chosen\n";
-    }
-    else if (choice == 3) {
-        // 2. CALL THE FUNCTION HERE! 
-        // Pass your 'myClasses' list into it so it prints out the entered classes.
-        viewEnteredClasses(myClasses);
-    }
-    else {
-        // Catches any invalid numbers entered by the user
-        std::cout << "Invalid choice! Please try again.\n";
+void viewClass::viewEnteredClasses(const vector<StudyItem*>& classes) const {
+	if (classes.empty()) {
+		cout << "No classes entered yet." << endl;
+		return;
+	}
+    cout << "Current Classes in Schedule:" << endl;
+    for (size_t i = 0; i < classes.size(); i++) {
+		cout << "- " << classes[i]->getName() << " | Credits: " << classes[i]->getCredits() << " | Study Hours: "; // Use the getter to access the name and credits
+		// Call the polymorphic function to calculate study hours
+		// This will automatically call the correct version of calculatestudyhours() based on the actual object type (StandardCourse or ExamPrep)
+		//careful when editing future logic here, this is a polymorphic function call, meaning that the program will automatically figure out which version of the function to run based on the actual object type (StandardCourse or ExamPrep) even though the vector holds generic StudyItem pointers.
+        classes[i]->calculatestudyhours();
     }
 
-    return 0; 
+    cout << endl;
+    cout << "-------------------------------" << endl;
+}

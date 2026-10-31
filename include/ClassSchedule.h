@@ -13,4 +13,7 @@ public:
 
 	// polymorphic user task, even though the vector holds generic "StudyItem" pointers the program automatically figures out whether to run the Standard math or the ExamPrep math for each specific item.
 	void generateRecommendations() const;
+	const std::vector<StudyItem*>& getCourseList() const {
+		return courseList;
+	}
 };
