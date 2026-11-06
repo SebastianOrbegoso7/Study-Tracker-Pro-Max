@@ -101,7 +101,20 @@ int main() {
 		}
 		case 2:
 			try {
-				mySchedule.generateRecommendations(); // Checkpoint requirement
+				double weeklyLimit;
+
+				cout << "\nEnter your maximum study hours per week: ";
+				cin >> weeklyLimit;
+
+				while (cin.fail() || weeklyLimit <= 0) {
+					cin.clear();
+					cin.ignore(10000, '\n');
+
+					cout << "Invalid input. Enter a number greater than 0: ";
+					cin >> weeklyLimit;
+				}
+
+				mySchedule.generateRecommendations(weeklyLimit);
 			}
 			catch (const std::runtime_error& e) {
 				cout << "\nApplication Error: " << e.what() << "\n"; // e.what() error message

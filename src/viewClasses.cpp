@@ -15,7 +15,8 @@ void viewClass::viewEnteredClasses(const vector<StudyItem*>& classes) const {
 		// Call the polymorphic function to calculate study hours
 		// This will automatically call the correct version of calculatestudyhours() based on the actual object type (StandardCourse or ExamPrep)
 		//careful when editing future logic here, this is a polymorphic function call, meaning that the program will automatically figure out which version of the function to run based on the actual object type (StandardCourse or ExamPrep) even though the vector holds generic StudyItem pointers.
-        classes[i]->calculatestudyhours();
+		double totalHours = 0.0;
+		classes[i]->calculatestudyhours(totalHours);
     }
 
     cout << endl;

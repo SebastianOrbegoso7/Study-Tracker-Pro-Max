@@ -12,9 +12,30 @@ void Schedule::addCourse(StudyItem* course) {
 }
 
 // polymorphic user task, even though the vector holds generic "StudyItem" pointers the program automatically figures out whether to run the Standard math or the ExamPrep math for each specific item.
-void Schedule::generateRecommendations() const {
-	cout << "\n - - study recommendations - -\n";
-	for (size_t i = 0; i < courseList.size(); i++) {
-		courseList[i]->calculatestudyhours();
-	}
+
+void Schedule::generateRecommendations(double weeklyLimit) const {
+
+    cout << "\n--- Study Recommendations ---\n";
+
+    double totalHours = 0.0;
+
+    for (size_t i = 0; i < courseList.size(); i++) {
+        courseList[i]->calculatestudyhours(totalHours);
+    }
+
+    cout << "\nTotal recommended study hours: "
+        << totalHours << endl;
+
+    cout << "Your weekly study-hour limit: "
+        << weeklyLimit << endl;
+
+    if (totalHours > weeklyLimit) {
+        cout << "\nWARNING: Your recommended study hours exceed your weekly limit!"
+            << endl;
+        cout << "Consider adjusting your study schedule." << endl;
+    }
+    else {
+        cout << "\nYour study recommendations are within your weekly limit!"
+            << endl;
+    }
 }

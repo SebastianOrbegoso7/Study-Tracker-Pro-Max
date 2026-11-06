@@ -9,6 +9,6 @@ private:
 public:
 	ExamPrep(string n, int c, int days) : StudyItem(n, c), daysUntilExam(days) {} // constructor again
 	// Overriding the math AGAIN, but this time executing the urgency logic for upcoming tests.
-	void calculatestudyhours() const override;
-
+	void calculatestudyhours(double& totalHours) const override;
+	
 };

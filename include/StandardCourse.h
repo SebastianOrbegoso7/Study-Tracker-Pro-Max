@@ -10,5 +10,5 @@ private:
 public:
 	StandardCourse(string n, int c, int diff) : StudyItem(n, c), difficulty(diff) {} // constructor
 
-	void calculatestudyhours() const override;
+	void calculatestudyhours(double& totalHours) const override;
 };
