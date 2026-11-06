@@ -10,13 +10,13 @@
 using namespace std;
 
 
-int main() { 
+int main() {
 	Schedule mySchedule;
 	// Console driver here:
 	cout << "W.I.P. Study Tracker V2" << endl; // Fixed grammatical error: uncapitalized title
 	int choice = 0;
 	// Basic loops here
-	while (choice != 4) { // Add switch case later
+	do { // Add switch case later
 		cout << "Menu: " << endl;// In the future for this, menu I want to have a total tracked # hours
 		cout << "1. Add Class" << endl; // Fixed grammatical error: uncapitalized option title
 		cout << "2. Generate Recommendations" << endl; // Fixed grammatical error: uncapitalized option title
@@ -31,7 +31,8 @@ int main() {
 			continue; // Go back to the start of the loop
 		}
 
-		if (choice == 1) {
+		switch (choice) { // ADDED: switch case statement instead of multiple if-else conditional statements
+		case 1: {
 			int courseType;
 			string name;
 			int credits;
@@ -40,7 +41,7 @@ int main() {
 
 			// FIX: Clear the leftover newline from the buffer before using getline
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			// now allows for correct course input
+			// Now allows for correct course input
 			cout << "Enter course name: ";
 			// FIX: Use getline to allow spaces in the course name
 			getline(cin, name);
@@ -67,30 +68,29 @@ int main() {
 			else {
 				std::cout << "Invalid course type selected." << endl;
 			}
-
+			break;
 		}
-		else if (choice == 2) {
+		case 2:
 			try {
-				mySchedule.generateRecommendations();// checkpoint requirment !!
-
+				mySchedule.generateRecommendations(); // Checkpoint requirement
 			}
 			catch (const std::runtime_error& e) {
-				cout << "\nApplication Error: " << e.what() << "\n"; // e.what() error message 
+				cout << "\nApplication Error: " << e.what() << "\n"; // e.what() error message
 				cout << "Your data is preserved. Please try again.\n";
 			}
-		}
-		else if (choice == 3) {
-			//Instantiate the viewer and pass it the schedule's list
+			break;
+		case 3:
+			// Instantiate the viewer and pass it to the schedule's list
 			viewClass viewer;
 			viewer.viewEnteredClasses(mySchedule.getCourseList());
-		}
-		else if (choice == 4) {
-			cout << "Exiting program. Good Luck Studying!\n" << endl;
-		}
-		else {
+			break;
+		case 4:
+			cout << "Exiting program. Good Luck studying!\n" << endl;
+			break;
+		default:
 			cout << "Invalid choice. Please pick 1, 2, 3, or 4.\n" << endl;
 		}
-	}
+	} while (choice != 4);
 	return 0;
 }
 // Right now, it prints recommended time per week, soon we will add a calander feature and make it track more reasonably 
