@@ -130,7 +130,7 @@ int main() {
 			cout << "Exiting program. Good Luck studying!\n" << endl;
 			break;
 		default:
-			cout << "Invalid choice. Please pick 1, 2, 3, or 4.\n" << endl;
+			cout << "\nInvalid choice. Please pick 1, 2, 3, or 4.\n" << endl; // Small change: added a newline at the beginning of this line to make the error message more noticable.
 		}
 	} while (choice != 4);
 	return 0;
