@@ -19,11 +19,11 @@ int main() {
 	// Basic loops here
 	do { // Added switch case
 		cout << "Menu: " << endl;// In the future for this, menu I want to have a total tracked # hours
-		cout << "1. Add Class" << endl; // Fixed grammatical error: uncapitalized option title
-		cout << "2. Generate Recommendations" << endl; // Fixed grammatical error: uncapitalized option title
-		cout << "3. View Current Schedule" << endl; // Fixed grammatical error: uncapitalized option title
-		cout << "4. Exit" << endl; // Fixed grammatical error: uncapitalized option title
-		cout << "Enter Choice: " << endl; // Fixed grammatical error: uncapitalized option title
+		cout << "1. Add Class" << endl; 
+		cout << "2. Generate Recommendations" << endl; 
+		cout << "3. View Current Schedule" << endl; 
+		cout << "4. Exit" << endl; 
+		cout << "Enter Choice: " << endl; 
 		cin >> choice;
 		if (cin.fail()) { // Check for invalid input
 			cin.clear(); // Clear the error flag
@@ -41,9 +41,10 @@ int main() {
 				cout << "Enter course type (1 for standard, 2 for exam prep): ";
 				cin >> courseType;
 
-				// FIX: Clear the leftover newline from the buffer before using getline
+				if (cin.fail()) {
+					cin.clear(); // fix: clears fail before calling cin.ignore to avoid infinite loop
+				}
 				cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				// Now allows for correct course input
 				do { // ADDED: A do-while loop to keep asking if user enters an invalid course name.
 					cout << "Enter course name: ";
 					// FIX: Use getline to allow spaces in the course name
@@ -57,11 +58,18 @@ int main() {
 				do { // ADDED: A do-while loop to repeat until user enters a valid number of credit hours
 					cout << "Enter credit hours: ";
 					cin >> credits;
-
-					if (credits <= 4 || credits >= 1) {
-						total_credits += credits; // Sum up all the credits
+					if (cin.fail()) {
+						cin.clear();
+						cin.ignore(numeric_limits<streamsize>::max(), '\n');
+						credits = 0; // Force it to trigger the invalid message below
 					}
 
+					// FIX: Changed || to &&. Using || made this ALWAYS evaluate to true 
+					if (credits <= 4 && credits >= 1) {
+						total_credits += credits;
+					}
+
+					// FIX: Changed || to && so it properly catches numbers outside the 1-4 range.
 					if (credits > 4 || credits < 1) {
 						cout << "You've entered an invalid number of credit hours. Please try again." << endl; // Ask the user again if they enter an invalid number of credit hours
 					}
@@ -71,18 +79,38 @@ int main() {
 
 				if (courseType == 1) {
 					int difficulty;
+					do{
 					cout << "Enter difficulty: " << endl;
 					cin >> difficulty;
-
-					if (total_credits <= 18) { // ADDED: An if conditional statement to not accept any more classes if the total credit hours will exceed 18.
-						mySchedule.addCourse(new StandardCourse(name, credits, difficulty));
-						cout << name << " added to schedule." << endl;
+					// FIX: Catch characters entered for difficulty
+					if (cin.fail()) {
+						cin.clear();
+						cin.ignore(numeric_limits<streamsize>::max(), '\n');
+						difficulty = 0; // Force it{ to trigger the invalid message below
 					}
-				}
+					if (difficulty < 1 || difficulty > 5) {
+						cout << "Invalid difficulty. Please enter a number between 1 and 5." << endl;
+					}
+				} while (difficulty < 1 || difficulty > 5);
+
+						if (total_credits <= 18) { // ADDED: An if conditional statement to not accept any more classes if the total credit hours will exceed 18.
+							mySchedule.addCourse(new StandardCourse(name, credits, difficulty));
+							cout << name << " added to schedule." << endl;
+
+						}
+					}
+				
 				else if (courseType == 2) {
 					int days;
 					cout << "Enter days until exam: ";
 					cin >> days;
+
+					// FIX: Catch characters entered for days
+					if (cin.fail()) {
+						cin.clear();
+						cin.ignore(numeric_limits<streamsize>::max(), '\n');
+						days = 0; // Force it to trigger the invalid message below
+					}
 
 					if (total_credits <= 18) { // ADDED: An if conditional statement to not accept any more classes if the total credit hours will exceed 18.
 						mySchedule.addCourse(new ExamPrep(name, credits, days));
