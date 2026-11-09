@@ -34,6 +34,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/*.ui"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
