@@ -12,6 +12,7 @@ public:
 	MainWindow(QWidget* parent = nullptr);
 private slots: 
 	void handleAddClass(); // gui eent handler for the task of adding a class
+	void handleGenerateRecommendations(); // Event handler to generate recommendations
 private: 
 	QLineEdit* nameInput;
 	QSpinBox* creditsInput;
@@ -19,5 +20,6 @@ private:
 	QPushButton* addButton;
 	QListWidget* scheduleDisplay; // result here
 	Schedule mySchedule;
-	
+	QPushButton* generateRecommendationsBtn;
+	QListWidget* generatedRecommendations;
 };

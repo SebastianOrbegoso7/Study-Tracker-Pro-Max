@@ -30,6 +30,19 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 	//submit data button
 	addButton = new QPushButton("Add Class");
 	layout->addWidget(addButton);
+
+	// Button to generate recommendations
+	QPushButton* generateRecommendationsBtn = new QPushButton("Generate Recommendations");
+	layout->addWidget(generateRecommendationsBtn);
+
+	// Button to view current schedule
+	QPushButton* viewCurrentScheduleBtn = new QPushButton("View Current Schedule");
+	layout->addWidget(viewCurrentScheduleBtn);
+
+	// Button to exit the program
+	QPushButton* exitBtn = new QPushButton("Exit");
+	layout->addWidget(exitBtn);
+
 	//display area
 	scheduleDisplay = new QListWidget();
 	layout->addWidget(scheduleDisplay);
@@ -37,6 +50,12 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 	setCentralWidget(central);
 	//tells qt when add buttons clicked, call the handleAddClass function in this class.
 	connect(addButton, &QPushButton::clicked, this, &MainWindow::handleAddClass);
+
+	// Area to view recommended study times
+	generatedRecommendations = new QListWidget();
+	layout->addWidget(generatedRecommendations);
+	// Event where user clicks on the "Generate Recommendations" button.
+	connect(generateRecommendationsBtn, &QPushButton::clicked, this, &MainWindow::handleGenerateRecommendations);
 }
 //GUI event handler for adding a class
 void MainWindow::handleAddClass() {
@@ -82,3 +101,24 @@ void MainWindow::handleAddClass() {
 	}
 }
 	
+void MainWindow::handleGenerateRecommendations() { // Added: class to generate recommended study hours.
+	try {
+		generatedRecommendations->clear(); // Clear the output area for new classes when the program re-opens.
+
+		for (StudyItem* item : mySchedule.getCourseList()) { // Iterate through all classes in the schedule.
+			double recommendedHours = 0.0;
+
+			item->calculatestudyhours(recommendedHours); // Study hours is calculated with the formula (credits * 2) * difficulty / 3.
+
+			QString studyRecommendation = QString::fromStdString(item->getName()) + ": " + QString::number(recommendedHours) + " hours of study time recommended per week."; // Print the number of hours the user should study for the class.
+
+			generatedRecommendations->addItem(studyRecommendation); // Output the result in the appropriate list widget (the second to last box in the main GUI).
+		}
+		if (mySchedule.getCourseList().empty()) {
+			throw std::invalid_argument("Schedule cannot be empty."); // Message to throw in the error pop-up.
+		}
+	}
+	catch (const std::exception& e) {
+		QMessageBox::warning(this, "Application Error", e.what()); // The error pop-up will let the user know that the schedule cannot be empty.
+	}
+}
