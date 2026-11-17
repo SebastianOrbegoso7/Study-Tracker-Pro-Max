@@ -6,6 +6,8 @@
 #include <QPushButton>
 #include <QListWidget>
 #include <QComboBox>      // new: for course type dropdown
+#include <QMap> // new: schedule details for day selected
+#include <QDate> // new: save schedule details for the selected day
 #include "ClassSchedule.h"
 
 class MainWindow : public QMainWindow {
@@ -15,7 +17,7 @@ public:
 private slots:
 	void handleAddClass();
 	void handleGenerateRecommendations();
-	void handleViewSchedule(); // new: event handler for task 3
+    void handleViewSchedule(); // new: event handler for task 3
 private:
 	QComboBox* courseTypeInput; // new: dropdown for course type
 	QLineEdit* nameInput;
@@ -28,4 +30,5 @@ private:
 	Schedule mySchedule;
 	QPushButton* generateRecommendationsBtn;
 	QListWidget* generatedRecommendations;
+    QMap<QDate, QString> dailySchedules; // new: for calendar day schedule details
 };
