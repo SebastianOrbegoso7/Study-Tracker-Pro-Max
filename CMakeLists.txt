@@ -14,18 +14,32 @@ set(CMAKE_AUTOUIC ON)
 # Required for .qrc files (Qt resource files for icons, images, etc)
 set(CMAKE_AUTORCC ON)
 
-# Suggestion from AI to properly set up CMAKE_PREFIX_PATH for Qt
-# Auto-detect default Qt 6 MSVC installations on Windows
-if(NOT CMAKE_PREFIX_PATH AND WIN32 AND MSVC)
-    file(GLOB _QT_CANDIDATES
-        "C:/Qt/6.*/msvc2022_64"
-        "D:/Qt/6.*/msvc2022_64"
-    )
-    if(_QT_CANDIDATES)
-        list(REVERSE _QT_CANDIDATES) # Pick newest if multiple exist
-        list(GET _QT_CANDIDATES 0 _QT_PATH)
-        list(APPEND CMAKE_PREFIX_PATH "${_QT_PATH}")
-        message(STATUS "Auto-detected Qt at: ${_QT_PATH}")
+# Auto-detect Qt 6 MSVC installations on Windows (and ignore invalid teammate paths)
+if(WIN32 AND MSVC)
+    set(_NEEDS_QT_AUTODETECT TRUE)
+    if(CMAKE_PREFIX_PATH)
+        foreach(_P IN LISTS CMAKE_PREFIX_PATH)
+            if(EXISTS "${_P}/lib/cmake/Qt6/Qt6Config.cmake")
+                set(_NEEDS_QT_AUTODETECT FALSE)
+            endif()
+        endforeach()
+    endif()
+
+    if(_NEEDS_QT_AUTODETECT)
+        file(GLOB _QT_CANDIDATES
+            "C:/Qt/6.*/msvc*_64"
+            "D:/Qt/6.*/msvc*_64"
+            "$ENV{USERPROFILE}/Qt/6.*/msvc*_64"
+        )
+        if(_QT_CANDIDATES)
+            list(SORT _QT_CANDIDATES)
+            list(REVERSE _QT_CANDIDATES) # Pick newest if multiple exist
+            list(GET _QT_CANDIDATES 0 _QT_PATH)
+            set(CMAKE_PREFIX_PATH "${_QT_PATH}")
+            message(STATUS "Auto-detected Qt at: ${_QT_PATH}")
+        else()
+            message(WARNING "Could not auto-detect Qt 6 MSVC kit in C:/Qt, D:/Qt, or $ENV{USERPROFILE}/Qt")
+        endif()
     endif()
 endif()
 
