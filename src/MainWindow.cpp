@@ -1,265 +1,212 @@
 #include "MainWindow.h"
-#include "StandardCourse.h"
-#include "ExamPrep.h" // new: included examprep so the gui can instantiate it
+#include "ExamPrep.h"
+#include "Validation.h" // connects automatic course difficulty
+#include "FileHandler.h" // connects CSV save/load persistence
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include <QLabel>
-#include <QCalendarWidget> // new: calendar widget
-#include <QDialog> // new: calendar pop-up
-#include <QTextEdit> // new: header to edit textboxes inside the calendar day schedule
-#include <QTextCharFormat> // new: header to format text
+#include <QCalendarWidget>
+#include <QDialog>
+#include <QTextEdit>
+#include <QTextCharFormat>
+#include <QDate>
+#include <QFileDialog> // lets user pick CSV files to test loading/errors
+#include <fstream>
 #include <stdexcept>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
-    setWindowTitle("Study Tracker Pro Max - Checkpoint 7");
-    resize(450, 700); // new: made window taller to fit all the new inputs
-    QWidget* central = new QWidget(this); //QMainWindow requires a "central widget" to act as a base for all other items.
-    //QVboxlayout automatically stacks items vertically, so we don't have to manually set the position of each item.
-    QVBoxLayout* layout = new QVBoxLayout(central);
+	setWindowTitle("Study Tracker Pro Max");
+	resize(450, 720);
+	QWidget* central = new QWidget(this);
+	QVBoxLayout* layout = new QVBoxLayout(central);
 
-    // new: task 1 - course type dropdown (standard vs exam)
-    layout->addWidget(new QLabel("Course Type:"));
-    courseTypeInput = new QComboBox();
-    courseTypeInput->addItem("Standard Course");
-    courseTypeInput->addItem("Exam Prep");
-    layout->addWidget(courseTypeInput);
+	layout->addWidget(new QLabel("Course Type:"));
+	courseTypeInput = new QComboBox();
+	courseTypeInput->addItem("Standard Course");
+	courseTypeInput->addItem("Exam Prep");
+	layout->addWidget(courseTypeInput);
 
-    // user input area
-    //QLabel acts as uneditable text on the screen for instruction
-    layout->addWidget(new QLabel("Enter course name:"));
-    nameInput = new QLineEdit();
-    layout->addWidget(nameInput);
-    layout->addWidget(new QLabel("Enter credit hours:"));
-    creditsInput = new QSpinBox();
-    creditsInput->setRange(1, 4); // Set the range of credit hours
-    layout->addWidget(creditsInput);
-    layout->addWidget(new QLabel("Difficulty (1-5 for Standard):"));
-    difficultyInput = new QSpinBox();
-    //1-5 restriction
-    //qt will prevent the user from entering invalid values, so we don't have to check for invalid input in the code.
-    difficultyInput->setRange(1, 5);
-    layout->addWidget(difficultyInput);
+	layout->addWidget(new QLabel("Course Code (e.g., COP 3003):"));
+	nameInput = new QLineEdit();
+	layout->addWidget(nameInput);
 
-    // new: task 1 - exam prep days input
-    layout->addWidget(new QLabel("Days Until Exam (For Exam Prep):"));
-    daysInput = new QSpinBox();
-    daysInput->setRange(1, 365); // Prevent 0 or negative days
-    layout->addWidget(daysInput);
+	layout->addWidget(new QLabel("Credit Hours (1-4):"));
+	creditsInput = new QSpinBox();
+	creditsInput->setRange(1, 4);
+	layout->addWidget(creditsInput);
 
-    //action button
-    //submit data button
-    addButton = new QPushButton("Add Class");
-    layout->addWidget(addButton);
+	layout->addWidget(new QLabel("Difficulty (1-5, Standard):"));
+	difficultyInput = new QSpinBox();
+	difficultyInput->setRange(1, 5);
+	layout->addWidget(difficultyInput);
 
-    // new: task 3 - view schedule button
-    QPushButton* viewCurrentScheduleBtn = new QPushButton("View Current Schedule");
-    layout->addWidget(viewCurrentScheduleBtn);
+	layout->addWidget(new QLabel("Days Until Exam (Exam Prep):"));
+	daysInput = new QSpinBox();
+	daysInput->setRange(1, 365);
+	layout->addWidget(daysInput);
 
-    //display area
-    scheduleDisplay = new QListWidget();
-    layout->addWidget(scheduleDisplay);
+	QPushButton* addBtn = new QPushButton("Add Class");
+	QPushButton* calendarBtn = new QPushButton("Open Calendar / Study Notes");
+	layout->addWidget(addBtn);
+	layout->addWidget(calendarBtn);
 
-    // new: task 2 - weekly limit input for recommendations (marlon's feature)
-    layout->addWidget(new QLabel("Weekly Study Limit (Hours):"));
-    weeklyLimitInput = new QDoubleSpinBox();
-    weeklyLimitInput->setRange(1.0, 168.0); // Max hours in a week
-    layout->addWidget(weeklyLimitInput);
+	scheduleDisplay = new QListWidget();
+	layout->addWidget(scheduleDisplay);
 
-    // Button to generate recommendations
-    generateRecommendationsBtn = new QPushButton("Generate Recommendations");
-    layout->addWidget(generateRecommendationsBtn);
+	layout->addWidget(new QLabel("Weekly Study Limit (Hours):"));
+	weeklyLimitInput = new QDoubleSpinBox();
+	weeklyLimitInput->setRange(-10.0, 168.0); // allows negative input like -2 so backend rejection can be demonstrated
+	weeklyLimitInput->setValue(15.0); // valid default budget
+	layout->addWidget(weeklyLimitInput);
 
-    // Area to view recommended study times
-    generatedRecommendations = new QListWidget();
-    layout->addWidget(generatedRecommendations);
+	QPushButton* genBtn = new QPushButton("Generate Recommendations");
+	layout->addWidget(genBtn);
 
-    // new: exit button
-    QPushButton* exitBtn = new QPushButton("Exit");
-    layout->addWidget(exitBtn);
+	generatedRecommendations = new QListWidget();
+	layout->addWidget(generatedRecommendations);
 
-    //connect the button to the function that will handle adding a class
-    setCentralWidget(central);
-    //tells qt when add buttons clicked, call the handleAddClass function in this class.
-    connect(addButton, &QPushButton::clicked, this, &MainWindow::handleAddClass);
+	QPushButton* loadBtn = new QPushButton("Load CSV"); // tests loading saved or malformed CSV files
+	QPushButton* clearBtn = new QPushButton("Clear Schedule"); // resets schedule and saved CSV
+	layout->addWidget(clearBtn);
+	QPushButton* exitBtn = new QPushButton("Exit");
+	layout->addWidget(loadBtn);
+	layout->addWidget(exitBtn);
 
-    // new: wiring up the view schedule, generate, and exit buttons
-    connect(viewCurrentScheduleBtn, &QPushButton::clicked, this, &MainWindow::handleViewSchedule);
-    connect(generateRecommendationsBtn, &QPushButton::clicked, this, &MainWindow::handleGenerateRecommendations);
-    connect(exitBtn, &QPushButton::clicked, this, &QWidget::close);
+	setCentralWidget(central);
+
+	connect(nameInput, &QLineEdit::textChanged, this, [=](const QString& text) { // auto-fills difficulty from course number
+		int d = getCourseDifficulty(text.trimmed().toStdString());
+		if (d >= 1 && d <= 5) difficultyInput->setValue(d);
+		});
+	connect(addBtn, &QPushButton::clicked, this, &MainWindow::handleAddClass);
+	connect(calendarBtn, &QPushButton::clicked, this, &MainWindow::handleViewSchedule);
+	connect(genBtn, &QPushButton::clicked, this, &MainWindow::handleGenerateRecommendations);
+	connect(loadBtn, &QPushButton::clicked, this, &MainWindow::handleLoadFile);
+	connect(exitBtn, &QPushButton::clicked, this, &QWidget::close);
+	connect(clearBtn, &QPushButton::clicked, this, [=]() {
+		mySchedule.clear();
+		try { FileHandler::saveSchedule(mySchedule, "schedule.csv"); }
+		catch (const std::exception& e) { QMessageBox::warning(this, "Save Error", e.what()); }
+		refreshScheduleList();
+		generatedRecommendations->clear();
+		});
+
+	if (std::ifstream("schedule.csv").good()) { // auto-loads saved schedule on relaunch
+		try { FileHandler::loadSchedule(mySchedule, "schedule.csv"); }
+		catch (const std::exception& e) { QMessageBox::warning(this, "Load Error", e.what()); }
+	}
+	refreshScheduleList();
 }
 
-//GUI event handler for adding a class
+void MainWindow::refreshScheduleList() { // keeps class list synced without popping up the calendar
+	scheduleDisplay->clear();
+	const auto& courses = mySchedule.getCourseList();
+	if (courses.empty()) {
+		scheduleDisplay->addItem("No classes entered yet.");
+		return;
+	}
+	for (StudyItem* item : courses) {
+		scheduleDisplay->addItem(QString::fromStdString(item->getName() + " (" + item->getType() + ") | Credits: ") + QString::number(item->getCredits()));
+	}
+	scheduleDisplay->addItem("Total Credits: " + QString::number(mySchedule.getTotalCredits()) + " / 18");
+}
+
 void MainWindow::handleAddClass() {
-    //extract data from the input fields
-    int credits = creditsInput->value();
-    int difficulty = difficultyInput->value();
-    int days = daysInput->value(); // new: extracting the days value for exam prep
-
-    //toSTDString is required because Qt uses its own string format, this converts it into a c++ string though
-    std::string name = nameInput->text().toStdString();
-
-    //pass data to the backend with error handling
-    try {
-        //name validation so that the user cannot enter an empty string for the name of the class or add a weird name
-        if (name.length() < 7 || name.length() > 8) {
-            throw std::invalid_argument("Course name must be 7 or 8 characters long\nFormat: 'XXX 1234' or 'XXX1234'.");
-        }
-        if (credits < 1 || credits > 4) {
-            throw std::invalid_argument("Credit hours per class must be between 1 and 4.");
-        }
-        if (name.empty()) {
-            throw std::invalid_argument("Course name cannot be empty.");
-        }
-
-        // new: polymorphism in action - checking the combo box
-        if (courseTypeInput->currentIndex() == 0) {
-            // Call the application function: Instantiate the exact same polymorphic class
-            // you used in the console version, and add it to your Schedule object.
-            mySchedule.addCourse(new StandardCourse(name, credits, difficulty));
-        }
-        else {
-            mySchedule.addCourse(new ExamPrep(name, credits, days));
-        }
-
-        // Display the visible result
-        // If successful, create a new text entry in the display box.
-        // We use QString::fromStdString() to convert your C++ string back into Qt's format.
-        QMessageBox::information(this, "Success", QString::fromStdString(name + " added successfully.")); // new: changed to qmessagebox::information so it looks like a success pop-up, not a warning
-
-        // Reset the input boxes for the next class entry
-        nameInput->clear();
-        creditsInput->setValue(1);
-        difficultyInput->setValue(1);
-        daysInput->setValue(1); // new: resetting the days input field
-
-        handleViewSchedule(); // new: auto-refresh the view schedule list so the user sees it immediately
-
-    }
-    catch (const std::exception& e) {
-        //  Handle Invalid Input (The final Checkpoint Requirement)
-        // If the try block throws an error, this creates a pop-up warning box
-        // instead of crashing the program.
-        // e.what() prints the exact string we wrote in the throw statement above.
-        QMessageBox::warning(this, "Application Error", e.what());
-    }
+	std::string name = nameInput->text().trimmed().toStdString();
+	try { // all format, range, and 18-credit validation runs in backend
+		if (courseTypeInput->currentIndex() == 0) {
+			mySchedule.addCourse(name, creditsInput->value(), difficultyInput->value()); // Overload 2 (StandardCourse)
+		}
+		else {
+			mySchedule.addCourse(new ExamPrep(name, creditsInput->value(), daysInput->value())); // Overload 1 (StudyItem*)
+		}
+		FileHandler::saveSchedule(mySchedule, "schedule.csv"); // auto-saves on every change
+		refreshScheduleList();
+		nameInput->clear();
+	}
+	catch (const std::exception& e) {
+		QMessageBox::warning(this, "Application Error", e.what());
+	}
 }
 
-// new: entire function added for task 3 (view schedule)
 void MainWindow::handleViewSchedule() {
-    scheduleDisplay->clear();
+	QDialog* popup = new QDialog(this);
+	popup->setWindowTitle("Student Calendar");
+	popup->resize(450, 350);
+	popup->setAttribute(Qt::WA_DeleteOnClose);
 
-    const auto& courses = mySchedule.getCourseList();
-    if (courses.empty()) {
-        scheduleDisplay->addItem("No classes entered yet.");
-        return;
-    }
+	QVBoxLayout* popupLayout = new QVBoxLayout(popup);
+	QCalendarWidget* cal = new QCalendarWidget(popup);
+	QLabel* dayLabel = new QLabel("Notes for " + cal->selectedDate().toString("MMM d, yyyy") + ":", popup);
+	QTextEdit* dayNote = new QTextEdit(popup);
+	dayNote->setText(QString::fromStdString(mySchedule.getCalendarNote(cal->selectedDate().toString("yyyy-MM-dd").toStdString()))); // loads persisted note
+	QPushButton* saveBtn = new QPushButton("Save Note", popup);
 
-    for (StudyItem* item : courses) {
-        QString info = QString::fromStdString(item->getName()) + " | Credits: " + QString::number(item->getCredits());
-        scheduleDisplay->addItem(info);
-    }
+	popupLayout->addWidget(cal);
+	popupLayout->addWidget(dayLabel);
+	popupLayout->addWidget(dayNote);
+	popupLayout->addWidget(saveBtn);
 
-    QPushButton* clickedBtn = qobject_cast<QPushButton*>(sender()); // Added: variable "clickedBtn" with value of any clicked button in the GUI.
-    if (clickedBtn && clickedBtn->text() == "View Current Schedule") { // Added: check whether the clicked button is the one in charge of handling the calendar and schedule.
-        // New: Calendar GUI
-        QDialog* calendarPopup = new QDialog(this); // Added: calendar pop-up.
-        calendarPopup->setWindowTitle("Student Calendar"); // Added: window/widget title for the calendar.
-        calendarPopup->resize(450, 350); // Added: The size of the calendar window.
-        calendarPopup->setAttribute(Qt::WA_DeleteOnClose); // Added: clear the calendar when the entire program closes.
+	QTextCharFormat highlight;
+	highlight.setBackground(QColor("yellow"));
+	highlight.setForeground(QColor("black"));
+	highlight.setFontWeight(QFont::Bold);
 
-        QVBoxLayout* popupLayout = new QVBoxLayout(calendarPopup); // Added: calendar appearance
-        QCalendarWidget* studentCalendar = new QCalendarWidget(calendarPopup); // Added: calendar window
-        popupLayout->addWidget(studentCalendar); // Added: calendar functionality and tasks
+	for (const auto& entry : mySchedule.getCalendarNotes()) {
+		if (!entry.second.empty()) { // fixed inverted isEmpty() highlight bug
+			QDate d = QDate::fromString(QString::fromStdString(entry.first), "yyyy-MM-dd");
+			if (d.isValid()) cal->setDateTextFormat(d, highlight);
+		}
+	}
 
-        // New: Day note
-        QLabel* dayLabel = new QLabel("Notes for " + studentCalendar->selectedDate().toString("MMM d, yyyy") + ": ", calendarPopup);
-        popupLayout->addWidget(dayLabel);
+	connect(cal, &QCalendarWidget::clicked, popup, [=](const QDate& date) {
+		dayLabel->setText("Notes for " + date.toString("MMM d, yyyy") + ":");
+		dayNote->setText(QString::fromStdString(mySchedule.getCalendarNote(date.toString("yyyy-MM-dd").toStdString())));
+		});
 
-        // New: Enter/view plans for selected day.
-        QTextEdit* dayNote = new QTextEdit(calendarPopup);
-        dayNote->setPlaceholderText("Enter plans for the day");
-        dayNote->setText(dailySchedules.value(studentCalendar->selectedDate(), ""));
-        popupLayout->addWidget(dayNote);
+	connect(saveBtn, &QPushButton::clicked, popup, [=]() {
+		QDate day = cal->selectedDate();
+		QString text = dayNote->toPlainText();
+		mySchedule.setCalendarNote(day.toString("yyyy-MM-dd").toStdString(), text.toStdString()); // stores note in backend
+		cal->setDateTextFormat(day, text.trimmed().isEmpty() ? QTextCharFormat() : highlight);
+		try { FileHandler::saveSchedule(mySchedule, "schedule.csv"); } // persists notes to CSV
+		catch (const std::exception& e) { QMessageBox::warning(popup, "Save Error", e.what()); }
+		});
 
-        // New: Button to save day note.
-        QPushButton* saveBtn = new QPushButton("Save Note", calendarPopup);
-        popupLayout->addWidget(saveBtn);
-
-        // New: Highlight noted days.
-        QTextCharFormat highlightNote;
-        highlightNote.setBackground(QColor("yellow"));
-        highlightNote.setFontWeight(QFont::Bold);
-
-        // New: Noted days are hightlighted when the user opens the pop-up.
-        for (auto selectedDay = dailySchedules.begin(); selectedDay != dailySchedules.end(); selectedDay++) {
-            if(selectedDay.value().trimmed().isEmpty()) {
-                studentCalendar->setDateTextFormat(selectedDay.key(), highlightNote);
-            }
-        }
-
-        // New: Display notes for the day that the user clicks on.
-        connect(studentCalendar, &QCalendarWidget::clicked, calendarPopup, [=](const QDate& date) {
-            dayLabel->setText("Notes for " + date.toString("MMM d, yyyy") + ":");
-            dayNote->setText(dailySchedules.value(date, ""));
-        });
-
-        // New: Save the plan for the day.
-        connect(saveBtn, &QPushButton::clicked, calendarPopup, [=]() {
-            QDate clickedDay = studentCalendar->selectedDate();
-            QString dayPlan = dayNote->toPlainText();
-
-            if (dayPlan.trimmed().isEmpty()) {
-                dailySchedules.remove(clickedDay);
-                studentCalendar->setDateTextFormat(clickedDay, QTextCharFormat()); // Remove hightlight when the day has no plans anymore.
-            } else {
-                dailySchedules[clickedDay] = dayPlan;
-                studentCalendar->setDateTextFormat(clickedDay, highlightNote); // Highlight planned day.
-            }
-
-            QMessageBox::information(calendarPopup, "Saved", "Schedule updated for " + clickedDay.toString("MMM d, yyyy") + ".");
-        });
-
-        calendarPopup->exec();
-        }
+	popup->exec();
 }
 
-void MainWindow::handleGenerateRecommendations() { // Added: class to generate recommended study hours.
-    try {
-        // new: moved this check to the top. if it's empty, we should throw the error before doing any math.
-        if (mySchedule.getCourseList().empty()) {
-            throw std::invalid_argument("Schedule cannot be empty."); // Message to throw in the error pop-up.
-        }
+void MainWindow::handleGenerateRecommendations() {
+	try {
+		StudyPlanResult plan = mySchedule.buildRecommendations(weeklyLimitInput->value()); // polymorphic math + budget scaling in backend
+		generatedRecommendations->clear();
 
-        generatedRecommendations->clear(); // Clear the output area for new classes when the program re-opens.
+		for (const auto& entry : plan.entries) {
+			QString line = QString::fromStdString(entry.courseName) + ": " + QString::number(entry.scaledHours, 'f', 2) + " hrs/wk";
+			if (plan.wasScaled) line += " (ideal: " + QString::number(entry.idealHours, 'f', 2) + ")";
+			generatedRecommendations->addItem(line);
+		}
+		generatedRecommendations->addItem("Total: " + QString::number(plan.totalScheduledHours, 'f', 2) + " / " + QString::number(plan.weeklyLimit, 'f', 2) + " hrs");
 
-        double totalRecommendedHours = 0.0; // new: variables to track total hours and grab the weekly limit
-        double weeklyLimit = weeklyLimitInput->value(); // new: variables to track total hours and grab the weekly limit
+		if (plan.wasScaled) {
+			QMessageBox::warning(this, "Limit Exceeded", "Ideal hours exceeded your limit and were scaled to fit.");
+		}
+	}
+	catch (const std::exception& e) {
+		QMessageBox::warning(this, "Application Error", e.what());
+	}
+}
 
-        for (StudyItem* item : mySchedule.getCourseList()) { // Iterate through all classes in the schedule.
-            double classHours = 0.0;
-            item->calculatestudyhours(classHours); // Study hours is calculated with the formula (credits * 2) * difficulty / 3.
-
-            totalRecommendedHours += classHours; // new: tallying up total hours for the warning logic
-
-            QString studyRecommendation = QString::fromStdString(item->getName()) + ": " + QString::number(classHours) + " hours/week."; // Print the number of hours the user should study for the class.
-            generatedRecommendations->addItem(studyRecommendation); // Output the result in the appropriate list widget (the second to last box in the main GUI).
-        }
-
-        // new: adding the totals and marlon's visual warning logic to the gui
-        generatedRecommendations->addItem("----------------------------------");
-        generatedRecommendations->addItem("Total Required: " + QString::number(totalRecommendedHours) + " hrs");
-        generatedRecommendations->addItem("Your Limit: " + QString::number(weeklyLimit) + " hrs");
-
-        if (totalRecommendedHours > weeklyLimit) {
-            QMessageBox::warning(this, "Schedule Warning",
-                "WARNING: Your recommended study hours exceed your weekly limit!\nConsider adjusting your schedule.");
-        }
-        else {
-            QMessageBox::information(this, "Schedule Good",
-                "Your study recommendations are within your weekly limit!");
-        }
-    }
-    catch (const std::exception& e) {
-        QMessageBox::warning(this, "Application Error", e.what()); // The error pop-up will let the user know that the schedule cannot be empty.
-    }
+void MainWindow::handleLoadFile() { // loads a CSV file or demonstrates safe rollback on malformed files
+	QString path = QFileDialog::getOpenFileName(this, "Load Schedule CSV", "", "CSV Files (*.csv);;All Files (*)");
+	if (path.isEmpty()) return;
+	try {
+		FileHandler::loadSchedule(mySchedule, path.toStdString());
+		FileHandler::saveSchedule(mySchedule, "schedule.csv");
+		refreshScheduleList();
+		generatedRecommendations->clear();
+	}
+	catch (const std::exception& e) {
+		QMessageBox::warning(this, "File Load Error", e.what());
+	}
 }

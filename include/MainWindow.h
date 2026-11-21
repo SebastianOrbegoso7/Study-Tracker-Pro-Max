@@ -2,12 +2,10 @@
 #include <QMainWindow>
 #include <QLineEdit>
 #include <QSpinBox>
-#include <QDoubleSpinBox> // new: for weekly study limit
+#include <QDoubleSpinBox>
 #include <QPushButton>
 #include <QListWidget>
-#include <QComboBox>      // new: for course type dropdown
-#include <QMap> // new: schedule details for day selected
-#include <QDate> // new: save schedule details for the selected day
+#include <QComboBox>
 #include "ClassSchedule.h"
 
 class MainWindow : public QMainWindow {
@@ -17,18 +15,18 @@ public:
 private slots:
 	void handleAddClass();
 	void handleGenerateRecommendations();
-    void handleViewSchedule(); // new: event handler for task 3
+	void handleViewSchedule();
+	void handleLoadFile(); //loads saved or malformed CSV files
 private:
-	QComboBox* courseTypeInput; // new: dropdown for course type
+	void refreshScheduleList(); //updates class list without opening calendar
+
+	QComboBox* courseTypeInput;
 	QLineEdit* nameInput;
 	QSpinBox* creditsInput;
 	QSpinBox* difficultyInput;
-	QSpinBox* daysInput;        // new: for exam prep days
-	QDoubleSpinBox* weeklyLimitInput; // new: for weekly limit
-	QPushButton* addButton;
+	QSpinBox* daysInput;
+	QDoubleSpinBox* weeklyLimitInput;
 	QListWidget* scheduleDisplay;
-	Schedule mySchedule;
-	QPushButton* generateRecommendationsBtn;
 	QListWidget* generatedRecommendations;
-    QMap<QDate, QString> dailySchedules; // new: for calendar day schedule details
+	Schedule mySchedule;
 };
