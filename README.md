@@ -1,11 +1,21 @@
-# Study-Tracker-Pro-Max
+# Study Tracker Pro Max
 
-GUI installation: 
-([Install QT here](https://www.qt.io/development/download))
+## Environment & Build/Run
+* **OS:** Windows 11 (64-bit)
+* **IDE:** Visual Studio 2026 (v18.12)
+* **Compiler:** MSVC 2026 (v145 / Build Tools 14.52, 64-bit)
+* **C++ Standard:** C++17 (`/EHsc`)
+* **Framework:** QtWidgets (`msvc2022_64` kit), CMake 3.16+
 
-1. Download the most recent version of QT
-2. Open the Qt maintenance tool and click Add or Remove Components
-3. Click the QT dropdown and add the MSVC file
+1. Clone the repository and open the root folder (`CMakeLists.txt`) in Visual Studio 2026.
+2. Let CMake configure (if Qt is not auto-detected, set `CMAKE_PREFIX_PATH` to your Qt kit folder, e.g., `C:/Qt/6.x.x/msvc2022_64`).
+3. Build and run the `MyQtProject` target.
 
-How to run the W.I.P. file :
-Download the code and open it in Visual Studio, then press Ctrl+F5 to run 
+## AI Use Disclosure
+We used **Google Gemini** for:
+* Qt 6 GUI setup and fixing `QCalendarWidget` because we couldn't get it to work seamlessly.
+* CSV persistence and malformed-file rollback logic in `FileHandler`.
+* `CMakeLists.txt` setup (`/EHsc`, Qt auto-detection, and `windeployqt`).
+* Debugging the `ExamPrep` negative-hours bug and refactoring validation/study-hour scaling.
+* * Simple logic fixes (preventing `std::stoi` crashes on non-numeric course codes and keeping list refreshes separate from opening the calendar).
+* Checking memory cleanup on rejected course additions and reviewing the project against the COP 3003 checklist.
